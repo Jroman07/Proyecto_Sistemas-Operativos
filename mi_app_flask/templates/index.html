@@ -3,40 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <title>Restaurante FIFO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-    <h1>Fila del Restaurante (FIFO)</h1>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start p-4">
+    <div class="w-full max-w-md bg-white shadow-lg rounded-xl p-6 mt-6">
+        <h1 class="text-2xl font-bold text-center text-indigo-600 mb-4">Fila del Restaurante (FIFO)</h1>
 
-    <!-- Mostrar mensajes flash -->
-    {% with mensajes = get_flashed_messages() %}
-        {% if mensajes %}
-            <ul style="color: green;">
-                {% for mensaje in mensajes %}
-                    <li>{{ mensaje }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+        <!-- Mostrar mensajes flash -->
+        {% with mensajes = get_flashed_messages() %}
+            {% if mensajes %}
+                <ul class="mb-4 text-green-600 list-disc pl-5">
+                    {% for mensaje in mensajes %}
+                        <li>{{ mensaje }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
 
-    <!-- Formulario para agregar cliente -->
-    <form action="/agregar" method="POST">
-        <input type="text" name="cliente" placeholder="Nombre del cliente" required>
-        <button type="submit">Agregar a la fila</button>
-    </form>
+        <!-- Formulario para agregar cliente -->
+        <form action="/agregar" method="POST" class="flex flex-col sm:flex-row gap-2 mb-4">
+            <input type="text" name="cliente" placeholder="Nombre del cliente" required
+                class="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+            <button type="submit"
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Agregar</button>
+        </form>
 
-    <!-- Mostrar fila actual -->
-    <h2>Fila actual ({{ fila|length }}/4):</h2>
-    <ul>
-        {% for cliente in fila %}
-            <li>{{ loop.index }}. {{ cliente }}</li>
-        {% else %}
-            <p>No hay clientes en la fila.</p>
-        {% endfor %}
-    </ul>
+        <!-- Mostrar fila actual -->
+        <h2 class="text-lg font-semibold mb-2">Fila actual ({{ fila|length }}/4):</h2>
+        <ul class="space-y-1 mb-4">
+            {% for cliente in fila %}
+                <li class="bg-indigo-100 px-3 py-2 rounded text-indigo-800 shadow-sm">
+                    {{ loop.index }}. {{ cliente }}
+                </li>
+            {% else %}
+                <p class="text-gray-500">No hay clientes en la fila.</p>
+            {% endfor %}
+        </ul>
 
-    <!-- Botón para servir al siguiente cliente -->
-    <form action="/servir" method="get">
-        <button type="submit" {% if not fila %}disabled{% endif %}>Servir al siguiente</button>
-    </form>
+        <!-- Botón para servir al siguiente cliente -->
+        <form action="/servir" method="get" class="text-center">
+            <button type="submit"
+                class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50"
+                {% if not fila %}disabled{% endif %}>
+                Servir al siguiente
+            </button>
+        </form>
+    </div>
 </body>
 </html>
