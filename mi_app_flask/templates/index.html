@@ -2,10 +2,41 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mi primera app Flask</title>
+    <title>Restaurante FIFO</title>
 </head>
 <body>
-    <h1>{{ mensaje }}</h1>
-    <p>¡Este contenido viene desde Flask usando Jinja2!</p>
+    <h1>Fila del Restaurante (FIFO)</h1>
+
+    <!-- Mostrar mensajes flash -->
+    {% with mensajes = get_flashed_messages() %}
+        {% if mensajes %}
+            <ul style="color: green;">
+                {% for mensaje in mensajes %}
+                    <li>{{ mensaje }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulario para agregar cliente -->
+    <form action="/agregar" method="POST">
+        <input type="text" name="cliente" placeholder="Nombre del cliente" required>
+        <button type="submit">Agregar a la fila</button>
+    </form>
+
+    <!-- Mostrar fila actual -->
+    <h2>Fila actual ({{ fila|length }}/4):</h2>
+    <ul>
+        {% for cliente in fila %}
+            <li>{{ loop.index }}. {{ cliente }}</li>
+        {% else %}
+            <p>No hay clientes en la fila.</p>
+        {% endfor %}
+    </ul>
+
+    <!-- Botón para servir al siguiente cliente -->
+    <form action="/servir" method="get">
+        <button type="submit" {% if not fila %}disabled{% endif %}>Servir al siguiente</button>
+    </form>
 </body>
 </html>
