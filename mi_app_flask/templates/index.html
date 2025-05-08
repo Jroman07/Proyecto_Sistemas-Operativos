@@ -103,6 +103,12 @@
       </div>
     {% endif %}
 
+        <!-- Conteo de fallos de página -->
+    <p class="text-center text-sm text-gray-600">
+      Total de fallos de página (clientes nuevos agregados): <span class="font-bold text-indigo-700">{{ fallos }}</span>
+    </p>
+
+
     <!-- Botón de servir -->
     <form action="/servir" method="get" class="text-center pt-4">
       <button type="submit"

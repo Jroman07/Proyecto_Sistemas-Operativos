@@ -3,17 +3,19 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 app = Flask(__name__)
 app.secret_key = "secreto"
 
-# Cola principal y historial de reemplazos (FIFO)
 fila = []
 historial_reemplazos = []
+fallos = 0
 MAX_CLIENTES = 4
 
 @app.route("/")
 def index():
-    return render_template("index.html", fila=fila, historial=historial_reemplazos)
+    return render_template("index.html", fila=fila, historial=historial_reemplazos, fallos=fallos)
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
+    global fallos
+
     cliente = request.form["cliente"].strip()
     hamburguesa = request.form["hamburguesa"].strip()
     bebida = request.form["bebida"].strip()
@@ -22,31 +24,37 @@ def agregar():
         flash("Debes completar todos los campos del formulario.")
         return redirect(url_for("index"))
 
+    # Buscar si el cliente ya está en la fila (no genera fallo de página)
     for c in fila:
         if c["cliente"] == cliente:
             c["pedidos"].append({"hamburguesa": hamburguesa, "bebida": bebida})
-            flash(f"Añadido nuevo pedido para '{cliente}': hamburguesa '{hamburguesa}', bebida '{bebida}'.")
+            flash(f"✅ Pedido añadido para '{cliente}': 🍔 '{hamburguesa}', 🥤 '{bebida}'.")
             return redirect(url_for("index"))
+
+    # Fallo de página: cliente no estaba en la fila
+    fallos += 1
 
     if len(fila) >= MAX_CLIENTES:
         reemplazado = fila.pop(0)
         historial_reemplazos.append(reemplazado)
-        flash(f"La fila estaba llena. Se reemplazó automáticamente a '{reemplazado['cliente']}' (FIFO).")
+        flash(f"🔁 FIFO: Se reemplazó a '{reemplazado['cliente']}' para ingresar a '{cliente}'.")
 
+    # Agregar nuevo cliente
     fila.append({
         "cliente": cliente,
         "pedidos": [{"hamburguesa": hamburguesa, "bebida": bebida}]
     })
-    flash(f"'{cliente}' fue agregado con su primer pedido: hamburguesa '{hamburguesa}', bebida '{bebida}'.")
+
+    flash(f"⚠️ Fallo de página: se cargó '{cliente}' con 🍔 '{hamburguesa}' y 🥤 '{bebida}'.")
     return redirect(url_for("index"))
 
 @app.route("/servir")
 def servir():
     if fila:
         atendido = fila.pop(0)
-        flash(f"Se atendió a '{atendido['cliente']}' con {len(atendido['pedidos'])} pedido(s).")
+        flash(f"✅ Se atendió a '{atendido['cliente']}' con {len(atendido['pedidos'])} pedido(s).")
     else:
-        flash("No hay clientes para atender.")
+        flash("ℹ️ No hay clientes para atender.")
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
