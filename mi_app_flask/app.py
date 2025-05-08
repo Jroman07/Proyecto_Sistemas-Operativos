@@ -3,13 +3,14 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 app = Flask(__name__)
 app.secret_key = "secreto"
 
-# Cada cliente tendrá: nombre, y una lista de pedidos [{hamburguesa, bebida}, ...]
+# Cola principal y historial de reemplazos (FIFO)
 fila = []
+historial_reemplazos = []
 MAX_CLIENTES = 4
 
 @app.route("/")
 def index():
-    return render_template("index.html", fila=fila)
+    return render_template("index.html", fila=fila, historial=historial_reemplazos)
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
@@ -21,19 +22,17 @@ def agregar():
         flash("Debes completar todos los campos del formulario.")
         return redirect(url_for("index"))
 
-    # Buscar si ya está en la fila
     for c in fila:
         if c["cliente"] == cliente:
             c["pedidos"].append({"hamburguesa": hamburguesa, "bebida": bebida})
             flash(f"Añadido nuevo pedido para '{cliente}': hamburguesa '{hamburguesa}', bebida '{bebida}'.")
             return redirect(url_for("index"))
 
-    # Si la fila está llena, atender al primero
     if len(fila) >= MAX_CLIENTES:
-        atendido = fila.pop(0)
-        flash(f"La fila estaba llena. Se atendió automáticamente a '{atendido['cliente']}'.")
+        reemplazado = fila.pop(0)
+        historial_reemplazos.append(reemplazado)
+        flash(f"La fila estaba llena. Se reemplazó automáticamente a '{reemplazado['cliente']}' (FIFO).")
 
-    # Nuevo cliente
     fila.append({
         "cliente": cliente,
         "pedidos": [{"hamburguesa": hamburguesa, "bebida": bebida}]
