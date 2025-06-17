@@ -6,11 +6,29 @@ app.secret_key = "secreto"
 fila = []
 historial_reemplazos = []
 fallos = 0
-MAX_CLIENTES = 4
+MAX_CLIENTES = 4  # valor por defecto
 
 @app.route("/")
 def index():
-    return render_template("index.html", fila=fila, historial=historial_reemplazos, fallos=fallos)
+    return render_template(
+        "index.html",
+        fila=fila,
+        historial=historial_reemplazos,
+        fallos=fallos,
+        max_clientes=MAX_CLIENTES
+    )
+
+@app.route("/configurar_max", methods=["POST"])
+def configurar_max():
+    global MAX_CLIENTES
+    try:
+        nuevo_max = int(request.form["max_clientes"])
+        if 4 <= nuevo_max <= 10:
+            MAX_CLIENTES = nuevo_max
+            flash(f"🔧 Máximo de clientes actualizado a {MAX_CLIENTES}.")
+    except ValueError:
+        flash("❌ Valor inválido para el número máximo de clientes.")
+    return redirect(url_for("index"))
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
